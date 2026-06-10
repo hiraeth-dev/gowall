@@ -1,40 +1,25 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
+	"html"
 	"net/http"
+	"net/url"
+	"strings"
 
 	"github.com/Achno/gowall/config"
+	"github.com/PuerkitoBio/goquery"
 )
 
-type redditListing struct {
-	Data struct {
-		Children []struct {
-			Data redditPost `json:"data"`
-		} `json:"children"`
-	} `json:"data"`
-}
-
-type redditPost struct {
-	PostHint            string `json:"post_hint"`
-	URL                 string `json:"url"`
-	URLOverriddenByDest string `json:"url_overridden_by_dest"`
-	Over18              bool   `json:"over_18"`
-	IsVideo             bool   `json:"is_video"`
-}
-
 func GetWallpaperOfTheDay() (string, error) {
-	req, err := http.NewRequest("GET", config.WallOfTheDayUrl+".json?t=day&limit=10&raw_json=1", nil)
+	req, err := http.NewRequest(http.MethodGet, config.WallOfTheDayUrl+"?sort=top&t=day", nil)
 	if err != nil {
 		return "", err
 	}
-
 	req.Header.Set("User-Agent", "Mozilla/5.0 (compatible; gowall/1.0)")
-	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept", "text/html")
 
-	client := &http.Client{}
-	response, err := client.Do(req)
+	response, err := (&http.Client{}).Do(req)
 	if err != nil {
 		return "", err
 	}
@@ -43,27 +28,114 @@ func GetWallpaperOfTheDay() (string, error) {
 	if response.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("request failed with status code: %d %s", response.StatusCode, http.StatusText(response.StatusCode))
 	}
-
-	var listing redditListing
-	if err := json.NewDecoder(response.Body).Decode(&listing); err != nil {
+	doc, err := goquery.NewDocumentFromReader(response.Body)
+	if err != nil {
 		return "", err
 	}
+	post := firstPostSelection(doc)
+	if post == nil {
+		return "", fmt.Errorf("could not find a post element on the page")
+	}
+	if imageURL := firstPostImageURL(post); imageURL != "" {
+		return imageURL, nil
+	}
+	return "", fmt.Errorf("there wasn't a top wallpaper today :( check later")
+}
 
-	for _, child := range listing.Data.Children {
-		post := child.Data
-
-		if post.Over18 || post.IsVideo || post.PostHint != "image" {
-			continue
+func firstPostSelection(doc *goquery.Document) *goquery.Selection {
+	for _, selector := range []string{"shreddit-post", "article", "[data-testid='post-container']", ".thing"} {
+		if post := doc.Find(selector).First(); post.Length() > 0 {
+			return post
 		}
+	}
+	return nil
+}
 
-		if post.URLOverriddenByDest != "" {
-			return post.URLOverriddenByDest, nil
-		}
+func firstPostImageURL(post *goquery.Selection) string {
+	imageAttrs := []string{"src", "data-src"}
 
-		if post.URL != "" {
-			return post.URL, nil
+	if u, ok := post.Attr("data-url"); ok {
+		if clean := cleanImageURL(u); isRedditImageURL(clean) {
+			return clean
 		}
 	}
 
-	return "", fmt.Errorf("reddit returned no image posts in the top wallpaper feed")
+	var found string
+	post.Find("img, source").EachWithBreak(func(_ int, s *goquery.Selection) bool {
+		if srcset, ok := s.Attr("srcset"); ok {
+			if u := bestFromSrcset(srcset); isRedditImageURL(u) {
+				found = u
+				return false
+			}
+		}
+		for _, attr := range imageAttrs {
+			if u, ok := s.Attr(attr); ok {
+				if clean := cleanImageURL(u); isRedditImageURL(clean) {
+					found = clean
+					return false
+				}
+			}
+		}
+		return true
+	})
+	if found != "" {
+		return found
+	}
+
+	post.Find("a[href]").EachWithBreak(func(_ int, s *goquery.Selection) bool {
+		if u, ok := s.Attr("href"); ok {
+			if clean := cleanImageURL(u); isRedditImageURL(clean) {
+				found = clean
+				return false
+			}
+		}
+		return true
+	})
+	return found
+}
+
+func bestFromSrcset(srcset string) string {
+	best, bestW := "", 0
+	for _, candidate := range strings.Split(srcset, ",") {
+		fields := strings.Fields(strings.TrimSpace(candidate))
+		if len(fields) == 0 {
+			continue
+		}
+		w := 0
+		if len(fields) > 1 {
+			fmt.Sscanf(fields[1], "%dw", &w)
+		}
+		if clean := cleanImageURL(fields[0]); w > bestW && isRedditImageURL(clean) {
+			best, bestW = clean, w
+		}
+	}
+	return best
+}
+
+func cleanImageURL(imageURL string) string {
+	imageURL = strings.TrimSpace(html.UnescapeString(imageURL))
+	if imageURL == "" || strings.HasPrefix(imageURL, "data:") || strings.HasPrefix(imageURL, "blob:") {
+		return ""
+	}
+	if strings.HasPrefix(imageURL, "//") {
+		imageURL = "https:" + imageURL
+	}
+	parsed, err := url.Parse(imageURL)
+	if err != nil {
+		return imageURL
+	}
+	if strings.EqualFold(parsed.Hostname(), "preview.redd.it") {
+		parsed.Scheme, parsed.Host, parsed.RawQuery, parsed.ForceQuery = "https", "i.redd.it", "", false
+		return parsed.String()
+	}
+	return imageURL
+}
+
+func isRedditImageURL(imageURL string) bool {
+	parsed, err := url.Parse(imageURL)
+	if err != nil {
+		return false
+	}
+	host := strings.ToLower(parsed.Hostname())
+	return host == "i.redd.it" || host == "preview.redd.it" || host == "external-preview.redd.it"
 }
