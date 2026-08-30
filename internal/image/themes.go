@@ -36,13 +36,14 @@ var themes = map[string]Theme{
 	"mizuki-akiyama": MizukiAkiyama,
 	"murata": Murata,
 	"noctalia-legacy": NoctaliaLegacy,
-	"osaka-jade": OsakaJade,
 	"shien": Shien,
 	"shinonome": Shinonome,
 	"tokyo-night-moon": TokyoNightMoon,
 	"nord": Nord,
 	"rose-pine": RosePine,
 }
+
+
 
 
 
@@ -557,41 +558,6 @@ var (
 			color.RGBA{R: 62, G: 54, B: 78, A: 255},
 			color.RGBA{R: 18, G: 15, B: 24, A: 255},
 			color.RGBA{R: 255, G: 255, B: 255, A: 255},
-		},
-	}
-
-	OsakaJade = Theme{
-		Name: "Osaka-Jade",
-		Colors: []color.Color{
-			color.RGBA{R: 30, G: 145, B: 119, A: 255},
-			color.RGBA{R: 184, G: 200, B: 196, A: 255},
-			color.RGBA{R: 22, G: 122, B: 99, A: 255},
-			color.RGBA{R: 38, G: 165, B: 137, A: 255},
-			color.RGBA{R: 147, G: 54, B: 54, A: 255},
-			color.RGBA{R: 8, G: 21, B: 18, A: 255},
-			color.RGBA{R: 166, G: 181, B: 177, A: 255},
-			color.RGBA{R: 15, G: 37, B: 31, A: 255},
-			color.RGBA{R: 153, G: 168, B: 164, A: 255},
-			color.RGBA{R: 27, G: 99, B: 82, A: 255},
-			color.RGBA{R: 4, G: 10, B: 9, A: 255},
-			color.RGBA{R: 20, G: 27, B: 30, A: 255},
-			color.RGBA{R: 218, G: 218, B: 218, A: 255},
-			color.RGBA{R: 35, G: 42, B: 45, A: 255},
-			color.RGBA{R: 229, G: 116, B: 116, A: 255},
-			color.RGBA{R: 140, G: 207, B: 126, A: 255},
-			color.RGBA{R: 229, G: 199, B: 107, A: 255},
-			color.RGBA{R: 103, G: 176, B: 232, A: 255},
-			color.RGBA{R: 196, G: 127, B: 213, A: 255},
-			color.RGBA{R: 108, G: 191, B: 191, A: 255},
-			color.RGBA{R: 179, G: 185, B: 184, A: 255},
-			color.RGBA{R: 70, G: 78, B: 80, A: 255},
-			color.RGBA{R: 239, G: 126, B: 126, A: 255},
-			color.RGBA{R: 150, G: 217, B: 136, A: 255},
-			color.RGBA{R: 244, G: 214, B: 122, A: 255},
-			color.RGBA{R: 113, G: 186, B: 242, A: 255},
-			color.RGBA{R: 206, G: 137, B: 223, A: 255},
-			color.RGBA{R: 103, G: 203, B: 231, A: 255},
-			color.RGBA{R: 189, G: 195, B: 194, A: 255},
 		},
 	}
 
