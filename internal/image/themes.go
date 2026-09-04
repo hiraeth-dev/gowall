@@ -23,6 +23,7 @@ var themes = map[string]Theme{
 	"caelus": Caelus,
 	"autumn": Autumn,
 	"cyberpunk": Cyberpunk,
+	"dusky": Dusky,
 	"everforest": Everforest,
 	"evergreen": Evergreen,
 	"gruvbox": Gruvbox,
@@ -240,6 +241,26 @@ var (
 			color.RGBA{R: 67, G: 201, B: 255, A: 255},
 			color.RGBA{R: 183, G: 196, B: 242, A: 255},
 			color.RGBA{R: 43, G: 49, B: 74, A: 255},
+		},
+	}
+
+	Dusky = Theme{
+		Name: "Dusky",
+		Colors: []color.Color{
+			color.RGBA{R: 216, G: 93, B: 123, A: 255},
+			color.RGBA{R: 19, G: 17, B: 26, A: 255},
+			color.RGBA{R: 155, G: 116, B: 184, A: 255},
+			color.RGBA{R: 98, G: 156, B: 184, A: 255},
+			color.RGBA{R: 224, G: 90, B: 90, A: 255},
+			color.RGBA{R: 226, G: 222, B: 234, A: 255},
+			color.RGBA{R: 31, G: 27, B: 41, A: 255},
+			color.RGBA{R: 156, G: 150, B: 170, A: 255},
+			color.RGBA{R: 64, G: 57, B: 79, A: 255},
+			color.RGBA{R: 12, G: 10, B: 18, A: 255},
+			color.RGBA{R: 45, G: 39, B: 58, A: 255},
+			color.RGBA{R: 216, G: 157, B: 106, A: 255},
+			color.RGBA{R: 91, G: 143, B: 172, A: 255},
+			color.RGBA{R: 155, G: 109, B: 184, A: 255},
 		},
 	}
 
